@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Slot Tycoon</title>
+<style>
+  body {
+    font-family: 'Orbitron', sans-serif;
+    background: radial-gradient(circle at center, #111 0%, #222 100%);
+    color: #0ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    height: 100vh;
+  }
+  h1 {
+    margin: 1rem;
+    color: #f0f;
+    text-shadow: 0 0 10px #f0f, 0 0 20px #f0f;
+    font-size: 2rem;
+  }
+  .slot-container {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    gap: 10px;
+    margin: 20px;
+  }
+  .slot {
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 255, 255, 0.2);
+    border: 2px solid #0ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #0ff, 0 0 20px #0ff inset;
+    transition: transform 0.2s ease;
+  }
+  .spinning {
+    animation: spin 0.5s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+  }
+  button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background: #f0f;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 0 10px #f0f, 0 0 20px #f0f;
+    transition: transform 0.1s;
+  }
+  button:active {
+    transform: scale(0.95);
+  }
+  #money {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1rem;
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+  }
+  #money span {
+    margin-left: 5px;
+    font-size: 1rem;
+    color: #0f0;
+    opacity: 0;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  #money span.show {
+    opacity: 1;
+    top: -10px;
+  }
+  #leaderboard {
+    margin-top: 20px;
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #f0f;
+    border-radius: 10px;
+    padding: 10px;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0 0 10px #f0f, 0 0 20px #f0f;
+  }
+  #leaderboard h2 {
+    margin: 0 0 10px 0;
+    color: #f0f;
+  }
+  #leaderboard ol {
+    padding-left: 20px;
+    color: #fff;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="money">💰 เงินสะสม: 2000<span id="moneyEffect"></span></div>
+<h1>🎰 Slot Tycoon 🎰</h1>
+<div class="slot-container" id="slots">
+  <div class="slot">🍒</div>
+  <div class="slot">🍋</div>
+  <div class="slot">🍉</div>
+  <div class="slot">🍇</div>
+  <div class="slot">🍊</div>
+</div>
+<button id="spin">SPIN 500 บาท!</button>
+
+<div id="leaderboard">
+  <h2>🏆 Leaderboard 🏆</h2>
+  <ol id="leaders">
+    <li>wavy: 5000000</li>
+    <li>Player2: 3000</li>
+    <li>Player3: 2500</li>
+  </ol>
+</div>
+
+<script>
+  const slots = document.querySelectorAll('.slot');
+  const symbols = ['🍒', '🍋', '🍉', '🍇', '🍊'];
+  const payouts = { '🍒': 1000, '🍋': 800, '🍉': 600, '🍇': 400, '🍊': 200 };
+  let balance = 2000;
+  const jackpotPayout = 200000;
+  const leaderboard = [
+    { name: 'wavy', score: 5000000 },
+    { name: 'Player2', score: 3000 },
+    { name: 'Player3', score: 2500 }
+  ];
+
+  function spinSlots() {
+    if (balance < 500) {
+      alert('💀 เงินหมดแล้ว จบเกมใน Slot Tycoon!');
+      return;
+    }
+    balance -= 500;
+    updateMoney(0);
+
+    slots.forEach(slot => slot.classList.add('spinning'));
+
+    setTimeout(() => {
+      let isJackpot = Math.random() < 0.25;
+      let chosenSymbol;
+      let payout = 0;
+
+      if (isJackpot) {
+        chosenSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+        slots.forEach(slot => {
+          slot.textContent = chosenSymbol;
+          slot.classList.remove('spinning');
+        });
+        payout = jackpotPayout;
+        alert(`🎉 JACKPOT ใน Slot Tycoon! ได้ ${payout} บาท!`);
+      } else {
+        slots.forEach(slot => {
+          const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+          slot.textContent = randomSymbol;
+          slot.classList.remove('spinning');
+        });
+        let counts = {};
+        slots.forEach(slot => {
+          counts[slot.textContent] = (counts[slot.textContent] || 0) + 1;
+        });
+        for (let symbol in counts) {
+          if (counts[symbol] >= 3) {
+            payout = payouts[symbol] / 2;
+            break;
+          }
+        }
+      }
+
+      if (payout > 0) {
+        balance += payout;
+      }
+      updateMoney(payout);
+      updateLeaderboard();
+    }, 1000);
+  }
+
+  function updateMoney(payout) {
+    const moneyElem = document.getElementById('money');
+    moneyElem.innerHTML = `💰 เงินสะสม: ${balance}<span id="moneyEffect"></span>`;
+    
+    if (payout > 0) {
+      const effectElem = document.getElementById('moneyEffect');
+      effectElem.textContent = ` +${payout}`;
+      effectElem.classList.add('show');
+      setTimeout(() => {
+        effectElem.classList.remove('show');
+      }, 800);
+    }
+  }
+
+  function updateLeaderboard() {
+    const you = { name: 'You', score: balance };
+    const tempLeaderboard = [you, ...leaderboard];
+    tempLeaderboard.sort((a, b) => b.score - a.score);
+    const top3 = tempLeaderboard.slice(0, 3);
+
+    const leadersList = document.getElementById('leaders');
+    leadersList.innerHTML = '';
+    top3.forEach(player => {
+      const li = document.createElement('li');
+      li.textContent = `${player.name}: ${player.score}`;
+      leadersList.appendChild(li);
+    });
+  }
+
+  document.getElementById('spin').addEventListener('click', spinSlots);
+</script>
+
+</body>
+</html>
