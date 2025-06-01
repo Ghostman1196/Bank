@@ -1,1 +1,1 @@
-# sloty
+# Wavy Bank Company
