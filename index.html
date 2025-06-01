@@ -1,158 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Business</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { background: #121212; color: #eee; }
-    .card { background: #1f1f1f; color: #eee; }
-    h1 { color: gold; }
-    .btn { margin: 5px; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>💸 Tycoon Simulator</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { background: #111; color: #eee; }
+  .card { background: #222; color: #eee; }
+  .money-gain { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); color: lime; font-size: 2rem; font-weight: bold; opacity: 1; transition: all 1s ease-out; }
+</style>
 </head>
-<body>
-  <div class="container my-4">
-    <h1 class="text-center">💼 WAVEKEEHEE 💼</h1>
-    
-    <div class="row">
-      <div class="col-md-6">
-        <div class="card p-3 mb-3">
-          <h4>สถานะ</h4>
-          <p>💰 เงินสด: <span id="money">100</span> $</p>
-          <p>⚡ รายได้/วินาที: <span id="income">1</span> $</p>
-        </div>
+<body class="p-3">
+<h1 class="text-center mb-4">💸 Tycoon Simulator</h1>
 
-        <div class="card p-3 mb-3">
-          <h4>การจัดการ</h4>
-          <button class="btn btn-success" onclick="buyBusiness()">ซื้อธุรกิจ (50$)</button>
-          <p>จำนวนธุรกิจ: <span id="businessCount">0</span></p>
-          <button class="btn btn-primary" onclick="buyProperty()">ซื้ออสังหา (100$)</button>
-          <p>จำนวนอสังหา: <span id="propertyCount">0</span></p>
-          <button class="btn btn-warning" onclick="buyStock()">ซื้อหุ้น (200$)</button>
-          <p>จำนวนหุ้น: <span id="stockCount">0</span></p>
-          <button class="btn btn-danger" onclick="upgradeBusiness()">อัปเกรดธุรกิจ (เริ่ม 10$)</button>
-          <p>ระดับอัปเกรด: <span id="upgradeLevel">0</span></p>
-          <p>ราคาการอัปเกรดถัดไป: <span id="upgradeCost">10</span> $</p>
-        </div>
-      </div>
+<div class="row">
+  <div class="col-md-6">
+    <div class="card p-3 mb-3">
+      <h4>💰 เงิน: $<span id="money">0</span></h4>
+      <h4>🏦 รายได้/วินาที: $<span id="income">0</span></h4>
+      <button class="btn btn-primary" onclick="buyBusiness()">ซื้อธุรกิจ (10$)</button>
+      <p>จำนวนธุรกิจ: <span id="businessCount">0</span></p>
+      <button class="btn btn-primary" onclick="buyProperty()">ซื้ออสังหา (100$)</button>
+      <p>จำนวนอสังหา: <span id="propertyCount">0</span></p>
+      <button class="btn btn-success" onclick="upgradeMining()">อัปเกรดการขุด ($<span id="upgradeCost">10</span>)</button>
+      <p>เลเวลอัปเกรด: <span id="upgradeLevel">1</span></p>
+    </div>
 
-      <div class="col-md-6">
-        <div class="card p-3">
-          <h4>📈 กราฟรายได้</h4>
-          <canvas id="incomeChart" height="300"></canvas>
-        </div>
-      </div>
+    <div class="card p-3 mb-3">
+      <h4>📈 หุ้น</h4>
+      <button class="btn btn-secondary" onclick="buyStock('wavyBank')">ซื้อ Wavy Bank ($<span id="wavyBankPrice">49</span>)</button>
+      <button class="btn btn-secondary" onclick="sellStock('wavyBank')">ขาย Wavy Bank</button>
+      <p>Wavy Bank: <span id="wavyBankCount">0</span></p>
+
+      <button class="btn btn-secondary" onclick="buyStock('wavyCompany')">ซื้อ Wavy Company ($<span id="wavyCompanyPrice">500</span>)</button>
+      <button class="btn btn-secondary" onclick="sellStock('wavyCompany')">ขาย Wavy Company</button>
+      <p>Wavy Company: <span id="wavyCompanyCount">0</span></p>
+
+      <button class="btn btn-secondary" onclick="buyStock('moonTech')">ซื้อ MoonTech ($<span id="moonTechPrice">1000</span>)</button>
+      <button class="btn btn-secondary" onclick="sellStock('moonTech')">ขาย MoonTech</button>
+      <p>MoonTech: <span id="moonTechCount">0</span></p>
+    </div>
+
+    <div class="card p-3">
+      <button class="btn btn-success" onclick="saveGame()">💾 บันทึกเกม</button>
+      <button class="btn btn-warning" onclick="loadGame()">📂 โหลดเกม</button>
+      <button class="btn btn-danger" onclick="resetGame()">🔄 เริ่มใหม่</button>
     </div>
   </div>
 
-  <script>
-    let money = 100;
-    let income = 1;
-    let businessCount = 0;
-    let propertyCount = 0;
-    let stockCount = 0;
-    let upgradeLevel = 0;
-    let upgradeCost = 10;
-    let incomeHistory = [];
+  <div class="col-md-6">
+    <div class="card p-3 mb-3">
+      <h4>📊 กราฟรายได้</h4>
+      <canvas id="incomeChart" height="150"></canvas>
+    </div>
+    <div class="card p-3 mb-3">
+      <h4>📊 กราฟปันผล</h4>
+      <canvas id="dividendChart" height="150"></canvas>
+    </div>
+    <div class="card p-3 mb-3">
+      <h4>📊 กราฟรวมรายได้+ปันผล</h4>
+      <canvas id="totalChart" height="150"></canvas>
+    </div>
+  </div>
+</div>
 
-    // Chart.js setup
-    const ctx = document.getElementById('incomeChart').getContext('2d');
-    const incomeChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'รายได้/วินาที',
-          data: [],
-          borderColor: 'gold',
-          backgroundColor: 'rgba(255, 215, 0, 0.2)',
-          fill: true
-        }]
-      },
-      options: {
-        scales: {
-          x: { ticks: { color: '#eee' } },
-          y: { ticks: { color: '#eee' } }
-        },
-        plugins: { legend: { labels: { color: '#eee' } } }
-      }
-    });
+<script>
+let money = 0, income = 0, businessCount = 0, propertyCount = 0;
+let upgradeLevel = 1, upgradeCost = 10;
+let wavyBankCount = 0, wavyCompanyCount = 0, moonTechCount = 0;
+let lastDividend = 0;
+const dividendFrequency = 10000;
+let stockPrices = { wavyBank: 49, wavyCompany: 500, moonTech: 1000 };
 
-    // Update UI
-    function updateUI() {
-      document.getElementById("money").textContent = money;
-      document.getElementById("income").textContent = income;
-      document.getElementById("businessCount").textContent = businessCount;
-      document.getElementById("propertyCount").textContent = propertyCount;
-      document.getElementById("stockCount").textContent = stockCount;
-      document.getElementById("upgradeLevel").textContent = upgradeLevel;
-      document.getElementById("upgradeCost").textContent = upgradeCost;
-    }
+const incomeHistory = [], dividendHistory = [], totalHistory = [];
 
-    // Update income chart
-    function updateChart() {
-      const time = new Date().toLocaleTimeString();
-      incomeHistory.push({ time, value: income });
-      if (incomeHistory.length > 10) incomeHistory.shift();
+const ctxIncome = document.getElementById('incomeChart').getContext('2d');
+const incomeChart = new Chart(ctxIncome, {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: 'รายได้', data: [], borderColor: 'cyan', fill: false }] },
+  options: { scales: { x: { ticks: { color: '#eee' } }, y: { ticks: { color: '#eee' } } }, plugins: { legend: { labels: { color: '#eee' } } } }
+});
 
-      incomeChart.data.labels = incomeHistory.map(item => item.time);
-      incomeChart.data.datasets[0].data = incomeHistory.map(item => item.value);
-      incomeChart.update();
-    }
+const ctxDividend = document.getElementById('dividendChart').getContext('2d');
+const dividendChart = new Chart(ctxDividend, {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: 'ปันผล', data: [], borderColor: 'orange', fill: false }] },
+  options: { scales: { x: { ticks: { color: '#eee' } }, y: { ticks: { color: '#eee' } } }, plugins: { legend: { labels: { color: '#eee' } } } }
+});
 
-    // Auto income
-    setInterval(() => {
-      money += income;
-      updateUI();
-      updateChart();
-    }, 1000);
+const ctxTotal = document.getElementById('totalChart').getContext('2d');
+const totalChart = new Chart(ctxTotal, {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: 'รวม', data: [], borderColor: 'lime', backgroundColor: 'rgba(0,255,0,0.2)', fill: true }] },
+  options: { scales: { x: { ticks: { color: '#eee' } }, y: { ticks: { color: '#eee' } } }, plugins: { legend: { labels: { color: '#eee' } } } }
+});
 
-    function buyBusiness() {
-      if (money >= 50) {
-        money -= 50;
-        businessCount++;
-        income += 1;
-        updateUI();
-      } else {
-        alert("เงินไม่พอ!");
-      }
-    }
+function updateUI() {
+  document.getElementById("money").textContent = money.toFixed(2);
+  document.getElementById("income").textContent = income.toFixed(2);
+  document.getElementById("businessCount").textContent = businessCount;
+  document.getElementById("propertyCount").textContent = propertyCount;
+  document.getElementById("upgradeLevel").textContent = upgradeLevel;
+  document.getElementById("upgradeCost").textContent = upgradeCost;
+  document.getElementById("wavyBankCount").textContent = wavyBankCount;
+  document.getElementById("wavyCompanyCount").textContent = wavyCompanyCount;
+  document.getElementById("moonTechCount").textContent = moonTechCount;
+  document.getElementById("wavyBankPrice").textContent = stockPrices.wavyBank.toFixed(2);
+  document.getElementById("wavyCompanyPrice").textContent = stockPrices.wavyCompany.toFixed(2);
+  document.getElementById("moonTechPrice").textContent = stockPrices.moonTech.toFixed(2);
+}
 
-    function buyProperty() {
-      if (money >= 100) {
-        money -= 100;
-        propertyCount++;
-        income += 2;
-        updateUI();
-      } else {
-        alert("เงินไม่พอ!");
-      }
-    }
+function animateMoneyGain(amount) {
+  const anim = document.createElement("div");
+  anim.textContent = "+$" + amount.toFixed(2);
+  anim.className = "money-gain";
+  document.body.appendChild(anim);
+  setTimeout(() => { anim.style.transform = "translate(-50%, -200%)"; anim.style.opacity = "0"; }, 10);
+  setTimeout(() => { anim.remove(); }, 1000);
+}
 
-    function buyStock() {
-      if (money >= 200) {
-        money -= 200;
-        stockCount++;
-        income += 3;
-        updateUI();
-      } else {
-        alert("เงินไม่พอ!");
-      }
-    }
+function buyBusiness() {
+  if (money >= 10) { money -= 10; businessCount++; income += 1; updateUI(); }
+}
+function buyProperty() {
+  if (money >= 100) { money -= 100; propertyCount++; income += 10; updateUI(); }
+}
+function upgradeMining() {
+  if (money >= upgradeCost) {
+    money -= upgradeCost;
+    upgradeLevel++;
+    income *= 2;
+    upgradeCost *= 2;
+    updateUI();
+  }
+}
 
-    function upgradeBusiness() {
-      if (money >= upgradeCost) {
-        money -= upgradeCost;
-        upgradeLevel++;
-        income *= 2;
-        upgradeCost *= 2;
-        updateUI();
-      } else {
-        alert("เงินไม่พอ!");
-      }
-    }
-  </script>
+function buyStock(stock) {
+  if (money >= stockPrices[stock]) {
+    money -= stockPrices[stock];
+    if (stock === "wavyBank") wavyBankCount++;
+    else if (stock === "wavyCompany") wavyCompanyCount++;
+    else if (stock === "moonTech") moonTechCount++;
+    updateUI();
+  }
+}
+function sellStock(stock) {
+  if (stock === "wavyBank" && wavyBankCount > 0) { money += stockPrices.wavyBank; wavyBankCount--; }
+  else if (stock === "wavyCompany" && wavyCompanyCount > 0) { money += stockPrices.wavyCompany; wavyCompanyCount--; }
+  else if (stock === "moonTech" && moonTechCount > 0) { money += stockPrices.moonTech; moonTechCount--; }
+  updateUI();
+}
+
+setInterval(() => { money += income; updateIncomeChart(); updateTotalChart(income); animateMoneyGain(income); updateUI(); }, 1000);
+setInterval(() => {
+  const d1 = wavyBankCount * stockPrices.wavyBank * 0.10;
+  const d2 = wavyCompanyCount * stockPrices.wavyCompany * 0.05;
+  const d3 = moonTechCount * stockPrices.moonTech * 0.08;
+  const totalDividend = d1 + d2 + d3;
+  lastDividend = totalDividend;
+  money += totalDividend;
+  updateDividendChart(totalDividend); updateTotalChart(totalDividend); animateMoneyGain(totalDividend); updateUI();
+}, dividendFrequency);
+setInterval(() => { ["wavyBank", "wavyCompany", "moonTech"].forEach(s => { stockPrices[s] += (Math.random() - 0.5) * 5; stockPrices[s] = Math.max(1, stockPrices[s]); }); updateUI(); }, 5000);
+
+function updateIncomeChart() {
+  const time = new Date().toLocaleTimeString(); incomeHistory.push({ time, value: income }); if (incomeHistory.length > 10) incomeHistory.shift();
+  incomeChart.data.labels = incomeHistory.map(i => i.time); incomeChart.data.datasets[0].data = incomeHistory.map(i => i.value); incomeChart.update();
+}
+function updateDividendChart(dividend) {
+  const time = new Date().toLocaleTimeString(); dividendHistory.push({ time, value: dividend }); if (dividendHistory.length > 10) dividendHistory.shift();
+  dividendChart.data.labels = dividendHistory.map(i => i.time); dividendChart.data.datasets[0].data = dividendHistory.map(i => i.value); dividendChart.update();
+}
+function updateTotalChart(total) {
+  const time = new Date().toLocaleTimeString(); totalHistory.push({ time, value: total }); if (totalHistory.length > 10) totalHistory.shift();
+  totalChart.data.labels = totalHistory.map(i => i.time); totalChart.data.datasets[0].data = totalHistory.map(i => i.value); totalChart.update();
+}
+
+function saveGame() { localStorage.setItem('gameData', JSON.stringify({ money, income, businessCount, propertyCount, upgradeLevel, upgradeCost, wavyBankCount, wavyCompanyCount, moonTechCount })); alert("💾 เซฟแล้ว!"); }
+function loadGame() { const data = JSON.parse(localStorage.getItem('gameData')); if (data) { Object.assign(window, data); updateUI(); alert("📂 โหลดแล้ว!"); } else alert("ไม่มีข้อมูล!"); }
+function resetGame() { if (confirm("⚠️ แน่ใจนะ?")) { money = 0; income = 0; businessCount = 0; propertyCount = 0; upgradeLevel = 1; upgradeCost = 10; wavyBankCount = 0; wavyCompanyCount = 0; moonTechCount = 0; localStorage.removeItem('gameData'); updateUI(); } }
+</script>
 </body>
 </html>
