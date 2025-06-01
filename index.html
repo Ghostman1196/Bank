@@ -1,79 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>💸 Wavy Company</title>
+<title>💸 Wavy Company Game</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  body { background: #111; color: #eee; }
-  .card { background: #222; color: #eee; }
-  .money-gain { 
-    position: fixed; 
-    left: 50%; top: 50%; 
-    transform: translate(-50%, -50%); 
-    color: lime; font-size: 2rem; font-weight: bold; 
-    opacity: 1; transition: all 1s ease-out; 
+  body {
+    background-color: #121212;
+    color: #eee;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  h1, h4 { color: #0ff; }
+  .card {
+    background-color: #222;
+    margin-bottom: 1rem;
+  }
+  button {
+    margin: 0.3rem 0.4rem 0.3rem 0;
+  }
+  table {
+    color: #eee;
+  }
+  .money-gain {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: #0f0;
+    font-size: 2rem;
+    font-weight: bold;
+    opacity: 1;
+    transition: all 1s ease-out;
     pointer-events: none;
+    user-select: none;
+  }
+  #income, #money {
+    font-weight: 700;
+    color: #0ff;
+  }
+  #leaderboardBody tr.highlight {
+    color: #0f0;
+    font-weight: bold;
   }
 </style>
 </head>
 <body class="p-3">
-<h1 class="text-center mb-4">💸 Wavy Company</h1>
+<h1 class="text-center mb-4">💸 Wavy Company Game</h1>
 
 <div class="row">
   <div class="col-md-6">
-    <div class="card p-3 mb-3">
-      <h4>💰 เงิน: $<span id="money">1000</span></h4>
-      <h4>🏦 รายได้/วินาที: $<span id="income">10</span></h4>
-      <button class="btn btn-primary" onclick="buyBusiness()">ซื้อธุรกิจ (10$)</button>
-      <p>จำนวนธุรกิจ: <span id="businessCount">0</span></p>
-      <button class="btn btn-primary" onclick="buyProperty()">ซื้ออสังหา (100$)</button>
-      <p>จำนวนอสังหา: <span id="propertyCount">0</span></p>
-      <button class="btn btn-success" onclick="upgradeMining()">อัปเกรดการขุด ($<span id="upgradeCost">1000</span>)</button>
-      <p>เลเวลอัปเกรด: <span id="upgradeLevel">1</span></p>
+
+    <!-- เงินและรายได้ -->
+    <div class="card p-3">
+      <h4>💰 เงิน: $<span id="money">1000.00</span></h4>
+      <h4>🏦 รายได้รวม/วินาที: $<span id="income">0.00</span></h4>
     </div>
 
-    <div class="card p-3 mb-3">
+    <!-- ปุ่มซื้อของ -->
+    <div class="card p-3">
+      <h4>🏢 ธุรกิจ & อสังหา</h4>
+      <button class="btn btn-primary" onclick="buyBusiness()">ซื้อธุรกิจ (10$)</button> จำนวน: <span id="businessCount">0</span><br />
+      <button class="btn btn-primary" onclick="buyProperty()">ซื้ออสังหา (100$)</button> จำนวน: <span id="propertyCount">0</span><br />
+      <button class="btn btn-success" onclick="upgradeMining()">อัปเกรดการขุด ($<span id="upgradeCost">1000</span>)</button> เลเวล: <span id="upgradeLevel">1</span>
+    </div>
+
+    <!-- หุ้น -->
+    <div class="card p-3">
       <h4>📈 หุ้น</h4>
       <button class="btn btn-secondary" onclick="buyStock('wavyBank')">ซื้อ Wavy Bank ($<span id="wavyBankPrice">49</span>)</button>
-      <button class="btn btn-secondary" onclick="sellStock('wavyBank')">ขาย Wavy Bank</button>
-      <p>Wavy Bank: <span id="wavyBankCount">0</span></p>
+      <button class="btn btn-secondary" onclick="sellStock('wavyBank')">ขาย Wavy Bank</button> จำนวน: <span id="wavyBankCount">0</span><br />
 
       <button class="btn btn-secondary" onclick="buyStock('wavyCompany')">ซื้อ Wavy Company ($<span id="wavyCompanyPrice">500</span>)</button>
-      <button class="btn btn-secondary" onclick="sellStock('wavyCompany')">ขาย Wavy Company</button>
-      <p>Wavy Company: <span id="wavyCompanyCount">0</span></p>
+      <button class="btn btn-secondary" onclick="sellStock('wavyCompany')">ขาย Wavy Company</button> จำนวน: <span id="wavyCompanyCount">0</span><br />
 
       <button class="btn btn-secondary" onclick="buyStock('moonTech')">ซื้อ MoonTech ($<span id="moonTechPrice">1000</span>)</button>
-      <button class="btn btn-secondary" onclick="sellStock('moonTech')">ขาย MoonTech</button>
-      <p>MoonTech: <span id="moonTechCount">0</span></p>
+      <button class="btn btn-secondary" onclick="sellStock('moonTech')">ขาย MoonTech</button> จำนวน: <span id="moonTechCount">0</span>
     </div>
 
+    <!-- ปุ่มรีเซ็ต -->
     <div class="card p-3">
       <button class="btn btn-danger" onclick="resetGame()">🔄 เริ่มใหม่</button>
     </div>
+
+    <!-- ตารางรายได้ & ปันผล -->
+    <div class="card p-3">
+      <h4>📋 ตารางรายได้ & ปันผล (ต่อวินาที)</h4>
+      <table class="table table-dark table-striped table-sm">
+        <thead>
+          <tr>
+            <th>รายการ</th>
+            <th>จำนวน</th>
+            <th>ปันผล/วิ ($)</th>
+          </tr>
+        </thead>
+        <tbody id="incomeTableBody"></tbody>
+      </table>
+    </div>
+
   </div>
 
   <div class="col-md-6">
+    <!-- กราฟรายได้ -->
     <div class="card p-3 mb-3">
       <h4>📊 กราฟรายได้</h4>
       <canvas id="incomeChart" height="150"></canvas>
     </div>
+
+    <!-- กราฟปันผล -->
     <div class="card p-3 mb-3">
       <h4>📊 กราฟปันผล</h4>
       <canvas id="dividendChart" height="150"></canvas>
     </div>
+
+    <!-- กราฟรวม -->
     <div class="card p-3 mb-3">
-      <h4>📊 กราฟรวมรายได้+ปันผล</h4>
+      <h4>📊 กราฟรวมรายได้ + ปันผล</h4>
       <canvas id="totalChart" height="150"></canvas>
     </div>
+
+    <!-- ลีดเดอร์บอร์ด -->
+    <div class="card p-3">
+      <h4>🏆 ลีดเดอร์บอร์ด 10 อันดับ</h4>
+      <table class="table table-dark table-striped table-sm">
+        <thead>
+          <tr>
+            <th>อันดับ</th>
+            <th>ชื่อ</th>
+            <th>สินทรัพย์ ($)</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+
   </div>
 </div>
 
 <script>
+// ตัวแปรหลัก
 let money = 1000;
-let income = 10;
+let income = 0;
 let businessCount = 0;
 let propertyCount = 0;
 let upgradeLevel = 1;
@@ -82,9 +150,6 @@ let upgradeCost = 1000;
 let wavyBankCount = 0;
 let wavyCompanyCount = 0;
 let moonTechCount = 0;
-
-const dividendFrequency = 10000;
-let lastDividend = 0;
 
 const stockPrices = {
   wavyBank: 49,
@@ -95,54 +160,32 @@ const stockPrices = {
 const businessPrice = 10;
 const propertyPrice = 100;
 
-const incomeHistory = [];
-const dividendHistory = [];
-const totalHistory = [];
+const dividendRates = {
+  business: 0.10,    // 10% ต่อ 10 วิ = 1% ต่อวิ
+  property: 0.10,
+  wavyBank: 0.10,
+  wavyCompany: 0.05,
+  moonTech: 0.08,
+};
 
-const ctxIncome = document.getElementById('incomeChart').getContext('2d');
-const incomeChart = new Chart(ctxIncome, {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: 'รายได้', data: [], borderColor: 'cyan', fill: false }] },
-  options: {
-    scales: {
-      x: { ticks: { color: '#eee' } },
-      y: { ticks: { color: '#eee' } },
-    },
-    plugins: {
-      legend: { labels: { color: '#eee' } }
-    }
-  }
-});
+const playerName = "ME";
 
-const ctxDividend = document.getElementById('dividendChart').getContext('2d');
-const dividendChart = new Chart(ctxDividend, {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: 'ปันผล', data: [], borderColor: 'orange', fill: false }] },
-  options: {
-    scales: {
-      x: { ticks: { color: '#eee' } },
-      y: { ticks: { color: '#eee' } },
-    },
-    plugins: {
-      legend: { labels: { color: '#eee' } }
-    }
-  }
-});
+// ลีดเดอร์บอร์ดเริ่มต้น
+let leaderboard = [
+  { name: "Wavy Company", asset: 964375194368 },
+  { name: "InvestorA", asset: 500000000 },
+  { name: "InvestorB", asset: 400000000 },
+  { name: "InvestorC", asset: 300000000 },
+  { name: "InvestorD", asset: 200000000 },
+  { name: "InvestorE", asset: 150000000 },
+  { name: "InvestorF", asset: 120000000 },
+  { name: "InvestorG", asset: 90000000 },
+  { name: "InvestorH", asset: 80000000 },
+  { name: "InvestorI", asset: 70000000 }
+];
 
-const ctxTotal = document.getElementById('totalChart').getContext('2d');
-const totalChart = new Chart(ctxTotal, {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: 'รวม', data: [], borderColor: 'lime', backgroundColor: 'rgba(0,255,0,0.2)', fill: true }] },
-  options: {
-    scales: {
-      x: { ticks: { color: '#eee' } },
-      y: { ticks: { color: '#eee' } },
-    },
-    plugins: {
-      legend: { labels: { color: '#eee' } }
-    }
-  }
-});
+// ช่วงเวลาการอัปเดต (ms)
+const updateInterval = 1000;
 
 function updateUI() {
   document.getElementById("money").textContent = money.toFixed(2);
@@ -157,9 +200,13 @@ function updateUI() {
   document.getElementById("wavyBankPrice").textContent = stockPrices.wavyBank.toFixed(2);
   document.getElementById("wavyCompanyPrice").textContent = stockPrices.wavyCompany.toFixed(2);
   document.getElementById("moonTechPrice").textContent = stockPrices.moonTech.toFixed(2);
+
+  updateIncomeTable();
+  updateLeaderboard();
 }
 
 function animateMoneyGain(amount) {
+  if(amount <= 0) return;
   const anim = document.createElement("div");
   anim.textContent = "+$" + amount.toFixed(2);
   anim.className = "money-gain";
@@ -173,12 +220,14 @@ function animateMoneyGain(amount) {
   }, 1000);
 }
 
+// ฟังก์ชันซื้อ-ขาย
 function buyBusiness() {
   if (money >= businessPrice) {
     money -= businessPrice;
     businessCount++;
-    income += 1;
+    updateIncome();
     updateUI();
+    animateMoneyGain(-businessPrice);
   }
 }
 
@@ -186,8 +235,9 @@ function buyProperty() {
   if (money >= propertyPrice) {
     money -= propertyPrice;
     propertyCount++;
-    income += 10;
+    updateIncome();
     updateUI();
+    animateMoneyGain(-propertyPrice);
   }
 }
 
@@ -198,6 +248,7 @@ function upgradeMining() {
     income *= 2;
     upgradeCost *= 2;
     updateUI();
+    animateMoneyGain(-upgradeCost / 2);
   }
 }
 
@@ -207,7 +258,9 @@ function buyStock(stock) {
     if (stock === "wavyBank") wavyBankCount++;
     else if (stock === "wavyCompany") wavyCompanyCount++;
     else if (stock === "moonTech") moonTechCount++;
+    updateIncome();
     updateUI();
+    animateMoneyGain(-stockPrices[stock]);
   }
 }
 
@@ -222,76 +275,15 @@ function sellStock(stock) {
     money += stockPrices.moonTech;
     moonTechCount--;
   }
+  updateIncome();
   updateUI();
-}
-
-// รายได้เพิ่มทุกวินาที
-setInterval(() => {
-  money += income;
-  updateIncomeChart();
-  updateTotalChart(income);
-  animateMoneyGain(income);
-  updateUI();
-}, 1000);
-
-// ปันผลทุก 10 วิ รวมธุรกิจ-อสังหา (10%) กับหุ้นตามเดิม
-setInterval(() => {
-  const d1 = wavyBankCount * stockPrices.wavyBank * 0.10;
-  const d2 = wavyCompanyCount * stockPrices.wavyCompany * 0.05;
-  const d3 = moonTechCount * stockPrices.moonTech * 0.08;
-  const dBusiness = businessCount * businessPrice * 0.10;
-  const dProperty = propertyCount * propertyPrice * 0.10;
-
-  const totalDividend = d1 + d2 + d3 + dBusiness + dProperty;
-  lastDividend = totalDividend;
-  money += totalDividend;
-
-  updateDividendChart(totalDividend);
-  updateTotalChart(totalDividend);
-  animateMoneyGain(totalDividend);
-  updateUI();
-}, dividendFrequency);
-
-// ราคาหุ้นเปลี่ยนทุก 5 วิ แบบสุ่ม +-2.5 ดอลลาร์
-setInterval(() => {
-  ["wavyBank", "wavyCompany", "moonTech"].forEach(s => {
-    stockPrices[s] += (Math.random() - 0.5) * 5;
-    stockPrices[s] = Math.max(1, stockPrices[s]);
-  });
-  updateUI();
-}, 5000);
-
-function updateIncomeChart() {
-  const time = new Date().toLocaleTimeString();
-  incomeHistory.push({ time, value: income });
-  if (incomeHistory.length > 10) incomeHistory.shift();
-  incomeChart.data.labels = incomeHistory.map(i => i.time);
-  incomeChart.data.datasets[0].data = incomeHistory.map(i => i.value);
-  incomeChart.update();
-}
-
-function updateDividendChart(dividend) {
-  const time = new Date().toLocaleTimeString();
-  dividendHistory.push({ time, value: dividend });
-  if (dividendHistory.length > 10) dividendHistory.shift();
-  dividendChart.data.labels = dividendHistory.map(i => i.time);
-  dividendChart.data.datasets[0].data = dividendHistory.map(i => i.value);
-  dividendChart.update();
-}
-
-function updateTotalChart(total) {
-  const time = new Date().toLocaleTimeString();
-  totalHistory.push({ time, value: total });
-  if (totalHistory.length > 10) totalHistory.shift();
-  totalChart.data.labels = totalHistory.map(i => i.time);
-  totalChart.data.datasets[0].data = totalHistory.map(i => i.value);
-  totalChart.update();
+  animateMoneyGain(0); // no animation for sell here (optional)
 }
 
 function resetGame() {
-  if (confirm("⚠️ แน่ใจนะ? รีเซทเกมจะล้างข้อมูลทั้งหมด!")) {
+  if(confirm("แน่ใจจะเริ่มใหม่? ข้อมูลทั้งหมดจะถูกล้าง")) {
     money = 1000;
-    income = 10;
+    income = 0;
     businessCount = 0;
     propertyCount = 0;
     upgradeLevel = 1;
@@ -299,19 +291,203 @@ function resetGame() {
     wavyBankCount = 0;
     wavyCompanyCount = 0;
     moonTechCount = 0;
-
-    incomeHistory.length = 0;
-    dividendHistory.length = 0;
-    totalHistory.length = 0;
-
+    updateIncome();
     updateUI();
-    incomeChart.update();
-    dividendChart.update();
-    totalChart.update();
   }
 }
 
+// คำนวณรายได้รวมและปันผลต่อวิ
+function updateIncome() {
+  // รายได้จากธุรกิจและอสังหา (สมมติตรงนี้คูณเลเวลด้วยรายได้พื้นฐาน)
+  const businessIncome = businessCount * businessPrice * 0.1 * upgradeLevel;
+  const propertyIncome = propertyCount * propertyPrice * 0.1 * upgradeLevel;
+
+  // ปันผลหุ้น 10% ต่อ 10 วิ = 1% ต่อวิ (ยกเว้น Wavy Company 5% ต่อ 10 วิ = 0.5% ต่อวิ)
+  const wavyBankDividend = wavyBankCount * stockPrices.wavyBank * dividendRates.wavyBank / 10;
+  const wavyCompanyDividend = wavyCompanyCount * stockPrices.wavyCompany * dividendRates.wavyCompany / 10;
+  const moonTechDividend = moonTechCount * stockPrices.moonTech * dividendRates.moonTech / 10;
+
+  income = businessIncome + propertyIncome + wavyBankDividend + wavyCompanyDividend + moonTechDividend;
+}
+
+// อัพเดทตารางรายได้ & ปันผล
+function updateIncomeTable() {
+  const rows = [
+    { name: "ธุรกิจ", count: businessCount, dividendPerSecond: businessCount * businessPrice * dividendRates.business / 10 * upgradeLevel },
+    { name: "อสังหา", count: propertyCount, dividendPerSecond: propertyCount * propertyPrice * dividendRates.property / 10 * upgradeLevel },
+    { name: "Wavy Bank", count: wavyBankCount, dividendPerSecond: wavyBankCount * stockPrices.wavyBank * dividendRates.wavyBank / 10 },
+    { name: "Wavy Company", count: wavyCompanyCount, dividendPerSecond: wavyCompanyCount * stockPrices.wavyCompany * dividendRates.wavyCompany / 10 },
+    { name: "MoonTech", count: moonTechCount, dividendPerSecond: moonTechCount * stockPrices.moonTech * dividendRates.moonTech / 10 }
+  ];
+
+  const tbody = document.getElementById("incomeTableBody");
+  tbody.innerHTML = "";
+
+  rows.forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${row.name}</td><td>${row.count}</td><td>$${row.dividendPerSecond.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// อัปเดตลีดเดอร์บอร์ด (เรียงตามทรัพย์สิน + ของเรา)
+function updateLeaderboard() {
+  // คำนวณสินทรัพย์ผู้เล่นเราก่อน
+  const myAsset =
+    money +
+    businessCount * businessPrice +
+    propertyCount * propertyPrice +
+    wavyBankCount * stockPrices.wavyBank +
+    wavyCompanyCount * stockPrices.wavyCompany +
+    moonTechCount * stockPrices.moonTech;
+
+  // รวมเข้าลิสต์ แล้วเรียง
+  let updated = leaderboard.filter(p => p.name !== playerName);
+  updated.push({ name: playerName, asset: myAsset });
+  updated.sort((a, b) => b.asset - a.asset);
+
+  const top10 = updated.slice(0, 10);
+
+  const tbody = document.getElementById("leaderboardBody");
+  tbody.innerHTML = "";
+
+  top10.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    if(p.name === playerName) tr.classList.add("highlight");
+    tr.innerHTML = `<td>${i + 1}</td><td>${p.name}</td><td>$${p.asset.toLocaleString(undefined, {maximumFractionDigits: 2})}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Chart.js Setup
+const ctxIncome = document.getElementById('incomeChart').getContext('2d');
+const ctxDividend = document.getElementById('dividendChart').getContext('2d');
+const ctxTotal = document.getElementById('totalChart').getContext('2d');
+
+let incomeData = {
+  labels: [],
+  datasets: [{
+    label: 'รายได้/วินาที',
+    data: [],
+    backgroundColor: 'rgba(0, 255, 255, 0.3)',
+    borderColor: 'cyan',
+    borderWidth: 2,
+    fill: true,
+    tension: 0.3,
+  }]
+};
+
+let dividendData = {
+  labels: [],
+  datasets: [{
+    label: 'ปันผล/วินาที',
+    data: [],
+    backgroundColor: 'rgba(0, 255, 0, 0.3)',
+    borderColor: 'lime',
+    borderWidth: 2,
+    fill: true,
+    tension: 0.3,
+  }]
+};
+
+let totalData = {
+  labels: [],
+  datasets: [{
+    label: 'รายได้รวม + ปันผล',
+    data: [],
+    backgroundColor: 'rgba(255, 0, 255, 0.3)',
+    borderColor: 'magenta',
+    borderWidth: 2,
+    fill: true,
+    tension: 0.3,
+  }]
+};
+
+const incomeChart = new Chart(ctxIncome, {
+  type: 'line',
+  data: incomeData,
+  options: {
+    scales: { y: { beginAtZero: true } },
+    animation: { duration: 500 },
+  }
+});
+
+const dividendChart = new Chart(ctxDividend, {
+  type: 'line',
+  data: dividendData,
+  options: {
+    scales: { y: { beginAtZero: true } },
+    animation: { duration: 500 },
+  }
+});
+
+const totalChart = new Chart(ctxTotal, {
+  type: 'line',
+  data: totalData,
+  options: {
+    scales: { y: { beginAtZero: true } },
+    animation: { duration: 500 },
+  }
+});
+
+// อัพเดทกราฟทุกวินาที
+function updateCharts() {
+  const time = new Date().toLocaleTimeString();
+
+  // รายได้ธุรกิจ+อสังหา
+  const businessIncome = businessCount * businessPrice * 0.1 * upgradeLevel;
+  const propertyIncome = propertyCount * propertyPrice * 0.1 * upgradeLevel;
+  const totalDividend = 
+    wavyBankCount * stockPrices.wavyBank * dividendRates.wavyBank / 10 +
+    wavyCompanyCount * stockPrices.wavyCompany * dividendRates.wavyCompany / 10 +
+    moonTechCount * stockPrices.moonTech * dividendRates.moonTech / 10;
+
+  // อัพเดทข้อมูลกราฟรายได้
+  if(incomeData.labels.length > 20) {
+    incomeData.labels.shift();
+    incomeData.datasets[0].data.shift();
+  }
+  incomeData.labels.push(time);
+  incomeData.datasets[0].data.push(businessIncome + propertyIncome);
+
+  // กราฟปันผล
+  if(dividendData.labels.length > 20) {
+    dividendData.labels.shift();
+    dividendData.datasets[0].data.shift();
+  }
+  dividendData.labels.push(time);
+  dividendData.datasets[0].data.push(totalDividend);
+
+  // กราฟรวมรายได้+ปันผล
+  if(totalData.labels.length > 20) {
+    totalData.labels.shift();
+    totalData.datasets[0].data.shift();
+  }
+  totalData.labels.push(time);
+  totalData.datasets[0].data.push(businessIncome + propertyIncome + totalDividend);
+
+  incomeChart.update();
+  dividendChart.update();
+  totalChart.update();
+}
+
+// เพิ่มเงินตามรายได้ทุกวินาที
+function gainMoney() {
+  money += income;
+  updateUI();
+}
+
+// main loop
+setInterval(() => {
+  updateIncome();
+  gainMoney();
+  updateCharts();
+}, updateInterval);
+
+// เริ่มเกม
+updateIncome();
 updateUI();
+updateCharts();
 </script>
 </body>
 </html>
