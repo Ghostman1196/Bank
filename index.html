@@ -1,220 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Slot Tycoon</title>
+<meta charset="UTF-8">
+<title>Bitcoin Mining Simulator</title>
 <style>
   body {
-    font-family: 'Orbitron', sans-serif;
-    background: radial-gradient(circle at center, #111 0%, #222 100%);
-    color: #0ff;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #4f46e5, #9333ea);
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0;
-    height: 100vh;
+    padding-top: 50px;
   }
-  h1 {
-    margin: 1rem;
-    color: #f0f;
-    text-shadow: 0 0 10px #f0f, 0 0 20px #f0f;
-    font-size: 2rem;
-  }
-  .slot-container {
-    display: grid;
-    grid-template-columns: repeat(5, 60px);
-    gap: 10px;
-    margin: 20px;
-  }
-  .slot {
-    width: 60px;
-    height: 60px;
-    background: rgba(0, 255, 255, 0.2);
-    border: 2px solid #0ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 0 10px #0ff, 0 0 20px #0ff inset;
-    transition: transform 0.2s ease;
-  }
-  .spinning {
-    animation: spin 0.5s linear infinite;
-  }
-  @keyframes spin {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(360deg); }
+  .miner {
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 300px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   }
   button {
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 1rem;
-    background: #f0f;
-    color: #000;
+    background: #22c55e;
     border: none;
-    border-radius: 5px;
+    padding: 10px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 0 10px #f0f, 0 0 20px #f0f;
-    transition: transform 0.1s;
-  }
-  button:active {
-    transform: scale(0.95);
-  }
-  #money {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 1rem;
-    color: #0f0;
-    text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
-  }
-  #money span {
-    margin-left: 5px;
-    font-size: 1rem;
-    color: #0f0;
-    opacity: 0;
-    transition: all 0.3s ease;
-    position: relative;
-  }
-  #money span.show {
-    opacity: 1;
-    top: -10px;
-  }
-  #leaderboard {
-    margin-top: 20px;
-    background: rgba(0,0,0,0.5);
-    border: 2px solid #f0f;
-    border-radius: 10px;
-    padding: 10px;
-    width: 250px;
-    text-align: center;
-    box-shadow: 0 0 10px #f0f, 0 0 20px #f0f;
-  }
-  #leaderboard h2 {
-    margin: 0 0 10px 0;
-    color: #f0f;
-  }
-  #leaderboard ol {
-    padding-left: 20px;
     color: #fff;
+    font-weight: bold;
+    margin: 5px;
+  }
+  button.stop {
+    background: #ef4444;
+  }
+  button.sell {
+    background: #3b82f6;
+  }
+  button.upgrade {
+    background: #f59e0b;
+  }
+  .status {
+    margin: 10px 0;
   }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div id="money">💰 เงินสะสม: 2000<span id="moneyEffect"></span></div>
-<h1>🎰 Slot Tycoon 🎰</h1>
-<div class="slot-container" id="slots">
-  <div class="slot">🍒</div>
-  <div class="slot">🍋</div>
-  <div class="slot">🍉</div>
-  <div class="slot">🍇</div>
-  <div class="slot">🍊</div>
-</div>
-<button id="spin">SPIN 500 บาท!</button>
-
-<div id="leaderboard">
-  <h2>🏆 Leaderboard 🏆</h2>
-  <ol id="leaders">
-    <li>wavy: 5000000</li>
-    <li>Player2: 3000</li>
-    <li>Player3: 2500</li>
-  </ol>
+<div class="miner">
+  <h1>🚀 BTC Miner Sim</h1>
+  <p class="status">Balance: <span id="balance">0.00000</span> BTC</p>
+  <p class="status">Hashrate: <span id="hashrate">0</span> H/s</p>
+  <p class="status">Mining Rate: <span id="rate">0.00001</span> BTC/sec</p>
+  <p class="status">USD Balance: $<span id="usd">0</span></p>
+  <p class="status">Upgrade Cost: $<span id="upgradeCost">10</span></p>
+  <button id="mineBtn">⚡ Start Mining</button>
+  <button id="sellBtn" class="sell">💰 Sell BTC</button>
+  <button id="upgradeBtn" class="upgrade">⬆️ Upgrade Hashrate</button>
 </div>
 
 <script>
-  const slots = document.querySelectorAll('.slot');
-  const symbols = ['🍒', '🍋', '🍉', '🍇', '🍊'];
-  const payouts = { '🍒': 1000, '🍋': 800, '🍉': 600, '🍇': 400, '🍊': 200 };
-  let balance = 2000;
-  const jackpotPayout = 200000;
-  const leaderboard = [
-    { name: 'wavy', score: 5000000 },
-    { name: 'Player2', score: 3000 },
-    { name: 'Player3', score: 2500 }
-  ];
+  let mining = false;
+  let balance = 0;
+  let usdBalance = 0;
+  let miningRate = 0.00001;
+  let hashrate = 0;
+  const exchangeRate = 30000; // 1 BTC = 30,000 USD
+  let upgradeCost = 10;
 
-  function spinSlots() {
-    if (balance < 500) {
-      alert('💀 เงินหมดแล้ว จบเกมใน Slot Tycoon!');
-      return;
+  const balanceEl = document.getElementById('balance');
+  const hashrateEl = document.getElementById('hashrate');
+  const rateEl = document.getElementById('rate');
+  const usdEl = document.getElementById('usd');
+  const upgradeCostEl = document.getElementById('upgradeCost');
+  const mineBtn = document.getElementById('mineBtn');
+  const sellBtn = document.getElementById('sellBtn');
+  const upgradeBtn = document.getElementById('upgradeBtn');
+
+  let interval;
+
+  mineBtn.addEventListener('click', () => {
+    if (!mining) {
+      mining = true;
+      mineBtn.textContent = '🛑 Stop Mining';
+      mineBtn.classList.add('stop');
+      interval = setInterval(() => {
+        balance += miningRate;
+        balanceEl.textContent = balance.toFixed(5);
+        hashrate = Math.floor(Math.random() * 1000) + 100;
+        hashrateEl.textContent = hashrate;
+      }, 1000);
+    } else {
+      mining = false;
+      mineBtn.textContent = '⚡ Start Mining';
+      mineBtn.classList.remove('stop');
+      clearInterval(interval);
+      hashrateEl.textContent = 0;
     }
-    balance -= 500;
-    updateMoney(0);
+  });
 
-    slots.forEach(slot => slot.classList.add('spinning'));
-
-    setTimeout(() => {
-      let isJackpot = Math.random() < 0.25;
-      let chosenSymbol;
-      let payout = 0;
-
-      if (isJackpot) {
-        chosenSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-        slots.forEach(slot => {
-          slot.textContent = chosenSymbol;
-          slot.classList.remove('spinning');
-        });
-        payout = jackpotPayout;
-        alert(`🎉 JACKPOT ใน Slot Tycoon! ได้ ${payout} บาท!`);
-      } else {
-        slots.forEach(slot => {
-          const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-          slot.textContent = randomSymbol;
-          slot.classList.remove('spinning');
-        });
-        let counts = {};
-        slots.forEach(slot => {
-          counts[slot.textContent] = (counts[slot.textContent] || 0) + 1;
-        });
-        for (let symbol in counts) {
-          if (counts[symbol] >= 3) {
-            payout = payouts[symbol] / 2;
-            break;
-          }
-        }
-      }
-
-      if (payout > 0) {
-        balance += payout;
-      }
-      updateMoney(payout);
-      updateLeaderboard();
-    }, 1000);
-  }
-
-  function updateMoney(payout) {
-    const moneyElem = document.getElementById('money');
-    moneyElem.innerHTML = `💰 เงินสะสม: ${balance}<span id="moneyEffect"></span>`;
-    
-    if (payout > 0) {
-      const effectElem = document.getElementById('moneyEffect');
-      effectElem.textContent = ` +${payout}`;
-      effectElem.classList.add('show');
-      setTimeout(() => {
-        effectElem.classList.remove('show');
-      }, 800);
+  sellBtn.addEventListener('click', () => {
+    if (balance > 0) {
+      const usdEarned = balance * exchangeRate;
+      usdBalance += usdEarned;
+      balance = 0;
+      balanceEl.textContent = balance.toFixed(5);
+      usdEl.textContent = usdBalance.toFixed(2);
+      alert(`💰 Sold BTC for $${usdEarned.toFixed(2)}!`);
+    } else {
+      alert('❌ You have no BTC to sell!');
     }
-  }
+  });
 
-  function updateLeaderboard() {
-    const you = { name: 'You', score: balance };
-    const tempLeaderboard = [you, ...leaderboard];
-    tempLeaderboard.sort((a, b) => b.score - a.score);
-    const top3 = tempLeaderboard.slice(0, 3);
-
-    const leadersList = document.getElementById('leaders');
-    leadersList.innerHTML = '';
-    top3.forEach(player => {
-      const li = document.createElement('li');
-      li.textContent = `${player.name}: ${player.score}`;
-      leadersList.appendChild(li);
-    });
-  }
-
-  document.getElementById('spin').addEventListener('click', spinSlots);
+  upgradeBtn.addEventListener('click', () => {
+    if (usdBalance >= upgradeCost) {
+      miningRate *= 2; // อัพ Hashrate คูณ 2
+      usdBalance -= upgradeCost;
+      upgradeCost *= 2; // ครั้งต่อไปคูณ 2
+      // อัปเดตแสดงผล
+      rateEl.textContent = miningRate.toFixed(5);
+      usdEl.textContent = usdBalance.toFixed(2);
+      upgradeCostEl.textContent = upgradeCost;
+      alert('✅ Upgraded Hashrate x2!');
+    } else {
+      alert('❌ Not enough USD to upgrade!');
+    }
+  });
 </script>
 
 </body>
