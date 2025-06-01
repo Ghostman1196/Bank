@@ -1,131 +1,140 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bitcoin Mining Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platinum Card Balance</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #4f46e5, #9333ea);
+    background: linear-gradient(135deg, #2c2c2c, #111);
     color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding-top: 50px;
+    height: 100vh;
   }
-  .miner {
-    background: rgba(0,0,0,0.3);
-    border-radius: 12px;
+  .card-container {
+    background: #1c1c1c;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    width: 350px;
+    overflow: hidden;
+  }
+  .card-header {
     padding: 20px;
-    max-width: 300px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  }
-  button {
-    background: #22c55e;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #fff;
+    color: #000;
     font-weight: bold;
-    margin: 5px;
+    font-size: 1.2em;
   }
-  button.stop {
-    background: #ef4444;
+  .card-content {
+    padding: 20px;
+    position: relative;
   }
-  button.sell {
-    background: #3b82f6;
+  .card-content h3 {
+    margin: 0;
+    font-weight: normal;
   }
-  button.upgrade {
-    background: #f59e0b;
+  .balance {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 10px;
   }
-  .status {
-    margin: 10px 0;
+  .edit-btn, .theme-btn {
+    margin-top: 15px;
+    background: #c8b26a;
+    color: #000;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-block;
+    margin-right: 10px;
+  }
+  .edit-btn:hover, .theme-btn:hover {
+    background: #e1c485;
+  }
+  .hidden {
+    display: none;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 10px;
+    font-size: 1em;
+  }
+
+  /* ธีมสี */
+  .theme-gold .card-header {
+    background: linear-gradient(135deg, #bfa145, #e1c485);
+  }
+  .theme-gold .card-content {
+    background: linear-gradient(135deg, #000, #111);
+  }
+  .theme-blue .card-header {
+    background: linear-gradient(135deg, #3b5998, #8b9dc3);
+  }
+  .theme-blue .card-content {
+    background: linear-gradient(135deg, #0d1a2b, #1c2d44);
+  }
+  .theme-green .card-header {
+    background: linear-gradient(135deg, #4caf50, #81c784);
+  }
+  .theme-green .card-content {
+    background: linear-gradient(135deg, #0f2618, #1b3b25);
   }
 </style>
 </head>
 <body>
 
-<div class="miner">
-  <h1>🚀 BTC Miner Sim</h1>
-  <p class="status">Balance: <span id="balance">0.00000</span> BTC</p>
-  <p class="status">Hashrate: <span id="hashrate">0</span> H/s</p>
-  <p class="status">Mining Rate: <span id="rate">0.00001</span> BTC/sec</p>
-  <p class="status">USD Balance: $<span id="usd">0</span></p>
-  <p class="status">Upgrade Cost: $<span id="upgradeCost">10</span></p>
-  <button id="mineBtn">⚡ Start Mining</button>
-  <button id="sellBtn" class="sell">💰 Sell BTC</button>
-  <button id="upgradeBtn" class="upgrade">⬆️ Upgrade Hashrate</button>
+<div class="card-container theme-gold" id="card">
+  <div class="card-header">
+    Platinum Card
+  </div>
+  <div class="card-content">
+    <div>**** **** **** 7439</div>
+    <div>Expiry: 05/30</div>
+    <h3>Balance:</h3>
+    <div id="balance" class="balance">$ 9,813,647,593.21</div>
+    <input id="balanceInput" class="hidden" type="number" placeholder="Enter new balance">
+    <button id="editBtn" class="edit-btn">Edit Balance</button>
+    <button id="themeBtn" class="theme-btn">Change Theme</button>
+  </div>
 </div>
 
 <script>
-  let mining = false;
-  let balance = 0;
-  let usdBalance = 0;
-  let miningRate = 0.00001;
-  let hashrate = 0;
-  const exchangeRate = 30000; // 1 BTC = 30,000 USD
-  let upgradeCost = 10;
-
   const balanceEl = document.getElementById('balance');
-  const hashrateEl = document.getElementById('hashrate');
-  const rateEl = document.getElementById('rate');
-  const usdEl = document.getElementById('usd');
-  const upgradeCostEl = document.getElementById('upgradeCost');
-  const mineBtn = document.getElementById('mineBtn');
-  const sellBtn = document.getElementById('sellBtn');
-  const upgradeBtn = document.getElementById('upgradeBtn');
+  const balanceInput = document.getElementById('balanceInput');
+  const editBtn = document.getElementById('editBtn');
+  const themeBtn = document.getElementById('themeBtn');
+  const cardContainer = document.getElementById('card');
 
-  let interval;
+  const themes = ['theme-gold', 'theme-blue', 'theme-green'];
+  let currentTheme = 0;
 
-  mineBtn.addEventListener('click', () => {
-    if (!mining) {
-      mining = true;
-      mineBtn.textContent = '🛑 Stop Mining';
-      mineBtn.classList.add('stop');
-      interval = setInterval(() => {
-        balance += miningRate;
-        balanceEl.textContent = balance.toFixed(5);
-        hashrate = Math.floor(Math.random() * 1000) + 100;
-        hashrateEl.textContent = hashrate;
-      }, 1000);
+  editBtn.addEventListener('click', () => {
+    if(balanceInput.classList.contains('hidden')) {
+      balanceInput.classList.remove('hidden');
+      balanceInput.value = balanceEl.innerText.replace(/[^0-9.]/g, '');
+      editBtn.innerText = 'Save';
     } else {
-      mining = false;
-      mineBtn.textContent = '⚡ Start Mining';
-      mineBtn.classList.remove('stop');
-      clearInterval(interval);
-      hashrateEl.textContent = 0;
+      const newBalance = parseFloat(balanceInput.value);
+      if(!isNaN(newBalance)) {
+        balanceEl.innerText = `$ ${newBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      }
+      balanceInput.classList.add('hidden');
+      editBtn.innerText = 'Edit Balance';
     }
   });
 
-  sellBtn.addEventListener('click', () => {
-    if (balance > 0) {
-      const usdEarned = balance * exchangeRate;
-      usdBalance += usdEarned;
-      balance = 0;
-      balanceEl.textContent = balance.toFixed(5);
-      usdEl.textContent = usdBalance.toFixed(2);
-      alert(`💰 Sold BTC for $${usdEarned.toFixed(2)}!`);
-    } else {
-      alert('❌ You have no BTC to sell!');
-    }
-  });
-
-  upgradeBtn.addEventListener('click', () => {
-    if (usdBalance >= upgradeCost) {
-      miningRate *= 2; // อัพ Hashrate คูณ 2
-      usdBalance -= upgradeCost;
-      upgradeCost *= 2; // ครั้งต่อไปคูณ 2
-      // อัปเดตแสดงผล
-      rateEl.textContent = miningRate.toFixed(5);
-      usdEl.textContent = usdBalance.toFixed(2);
-      upgradeCostEl.textContent = upgradeCost;
-      alert('✅ Upgraded Hashrate x2!');
-    } else {
-      alert('❌ Not enough USD to upgrade!');
-    }
+  themeBtn.addEventListener('click', () => {
+    cardContainer.classList.remove(themes[currentTheme]);
+    currentTheme = (currentTheme + 1) % themes.length;
+    cardContainer.classList.add(themes[currentTheme]);
   });
 </script>
 
